@@ -75,6 +75,12 @@ function checkCursorPosition() {
   textarea.selectionEnd = cursorPosition;
 }
 
+function checkClick(event) {
+  if (event.target.closest('.key')) {
+    document.querySelector('textarea').focus();
+  }
+}
+
 function changeLanguage() {
   const language = lang;
   const keys = document.querySelectorAll('.key');
@@ -240,6 +246,58 @@ function pressKeyUp(event) {
   }
 }
 
+function clickMouseDown(event) {
+  if (event.target.closest('.key')) {
+    const keyCode = event.target.closest('.key').dataset.code;
+    emulateTyping(keyCode);
+    if (keyCode === 'CapsLock') {
+      if (isKeyPressed.capslock === true) {
+        event.target.closest('.key').classList.remove('active');
+        switchVisibility('.default-key');
+        isKeyPressed.capslock = false;
+      } else {
+        event.target.closest('.key').classList.add('active');
+        switchVisibility('.capslock-on');
+        isKeyPressed.capslock = true;
+      }
+    } else if (keyCode === 'ShiftLeft' || keyCode === 'ShiftRight') {
+      event.target.closest('.key').classList.add('active');
+      if (isKeyPressed.capslock === true) {
+        switchVisibility('.caps-on-shift-on');
+        isKeyPressed.shift = true;
+      } else {
+        switchVisibility('.shift-on');
+        isKeyPressed.shift = true;
+      }
+    } else {
+      event.target.closest('.key').classList.add('active');
+    }
+  }
+}
+
+function clickMouseUp(event) {
+  if (event.target.closest('.key')) {
+    const keyCode = event.target.closest('.key').dataset.code;
+    if (keyCode === 'ShiftLeft' || keyCode === 'ShiftRight') {
+      event.target.closest('.key').classList.remove('active');
+      if (isKeyPressed.capslock === true) {
+        switchVisibility('.capslock-on');
+        isKeyPressed.shift = false;
+      } else {
+        switchVisibility('.default-key');
+        isKeyPressed.shift = false;
+      }
+    } else if (!(keyCode === 'CapsLock')) {
+      event.target.closest('.key').classList.remove('active');
+    }
+  }
+}
+
+document.addEventListener('mousedown', (event) => clickMouseDown(event));
+document.addEventListener('mouseup', (event) => {
+  clickMouseUp(event);
+  checkClick(event);
+});
 document.addEventListener('dblclick', (event) => changingLangWithMouse(event));
 
 document.addEventListener('keydown', (event) => pressKeyDown(event));
